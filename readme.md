@@ -1,13 +1,13 @@
-# Heroku Buildpack: Custom SSH key
+# Heroku Buildpack: Custom SSH keys
 
-Use *Custom SSH key buildpack* if you need to, for example, download a dependency stored in a private repository.
+Use *Custom SSH keys buildpack* if you need to, for example, download a dependencies stored in a private repositories.
 
 Based on [http://stackoverflow.com/a/29677091/3303182](http://stackoverflow.com/a/29677091/3303182).
 
 ## Usage
 
 - Add the buildpack to your app:
-  `heroku buildpacks:add --index 1 https://github.com/simon0191/custom-ssh-key-buildpack`
+  `heroku buildpacks:add --index 1 https://github.com/chadsmith/custom-ssh-keys-buildpack`
 
 - Generate a new SSH key (https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)
 
@@ -19,16 +19,16 @@ Based on [http://stackoverflow.com/a/29677091/3303182](http://stackoverflow.com/
 
   * Bitbucket: https://confluence.atlassian.com/bitbucket/add-an-ssh-key-to-an-account-302811853.html
 
-- Encode the private key as a base64 string and add it as the `CUSTOM_SSH_KEY` environment variable of the heroku app.
+- Encode the private key as a base64 string and add it as the `CUSTOM_SSH_KEY` environment variable of the heroku app. Set multiple keys by separaing them with commas.
 
-- Make a comma separated list of the hosts for which the ssh key should be used and add it as the `CUSTOM_SSH_KEY_HOSTS` environment variable of the heroku app.
+- Make a comma separated list of the hosts for which the ssh key should be used and add it as the `CUSTOM_SSH_HOSTS` environment variable of the heroku app.
 
   ```
   # OSX
-  $ heroku config:set CUSTOM_SSH_KEY=$(base64 --input ~/.ssh/deploy_key) CUSTOM_SSH_KEY_HOSTS=bitbucket.org,github.com
+  $ heroku config:set CUSTOM_SSH_KEYS="$(base64 --input ~/.ssh/deploy_key_1),$(base64 --input ~/.ssh/deploy_key_2)" CUSTOM_SSH_HOSTS=bitbucket.org,github.com
 
   # Linux
-  $ heroku config:set CUSTOM_SSH_KEY=$(base64 ~/.ssh/deploy_key) CUSTOM_SSH_KEY_HOSTS=bitbucket.org,github.com
+  $ heroku config:set CUSTOM_SSH_KEYS="$(base64 --input ~/.ssh/deploy_key_1),$(base64 --input ~/.ssh/deploy_key_2)" CUSTOM_SSH_HOSTS=bitbucket.org,github.com
   ```
 
 - Deploy your app and enjoy :)

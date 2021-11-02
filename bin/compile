@@ -5,7 +5,7 @@
 
 ENV_DIR=$3
 
-if [[ -f $ENV_DIR/CUSTOM_SSH_KEY && -f $ENV_DIR/CUSTOM_SSH_KEY_HOSTS ]]; then
+if [[ -f $ENV_DIR/CUSTOM_SSH_KEYS && -f $ENV_DIR/CUSTOM_SSH_HOSTS ]]; then
 
   echo "" >&1
 
@@ -14,25 +14,29 @@ if [[ -f $ENV_DIR/CUSTOM_SSH_KEY && -f $ENV_DIR/CUSTOM_SSH_KEY_HOSTS ]]; then
     mkdir -p ~/.ssh
     chmod 700 ~/.ssh
   fi
+  
+  # Split $CUSTOM_SSH_KEYS and CUSTOM_SSH_HOSTS
+  IFS=',';
+  CUSTOM_SSH_KEYS=`cat $ENV_DIR/CUSTOM_SSH_KEYS`;
+  CUSTOM_SSH_HOSTS=`cat $ENV_DIR/CUSTOM_SSH_HOSTS`;
+  i=0;
 
-  # Load the private key into custom_key file.
-  base64 --decode $ENV_DIR/CUSTOM_SSH_KEY > ~/.ssh/custom_key
-
-  # Change the permissions on the file to
-  # be read-only for this user.
-  chmod 400 ~/.ssh/custom_key
-
-  # Split $CUSTOM_SSH_KEY_HOSTS
-  IFS=',' ;for element in `cat $ENV_DIR/CUSTOM_SSH_KEY_HOSTS`;
+  # Iterate over each key and add to custom key file
+  for key in $CUSTOM_SSH_KEYS;
   do
-    echo -e "Host $element\n"\
-            "  IdentityFile ~/.ssh/custom_key\n"\
-            "  IdentitiesOnly yes\n"\
-            "  UserKnownHostsFile=/dev/null\n"\
-            "  StrictHostKeyChecking no"\
+    echo "$key" | base64 --decode > ~/.ssh/custom_key_$i
+    # Change the permissions on the file to be read-only for this user.
+    chmod 400 ~/.ssh/custom_key_$i
+    echo -e "Host ${CUSTOM_SSH_HOSTS[$i]}\n"\
+            "     User git\n"\
+            "     IdentityFile ~/.ssh/custom_key_$i\n"\
             >> ~/.ssh/config
+    echo "-----> Successfully added custom SSH key #$i"
+    i=$((i + 1))
   done
 
-  echo "-----> Successfully added custom SSH key"
-
+  for host in $CUSTOM_SSH_HOSTS;
+  do
+    ssh-keyscan -t rsa $host >> ~/.ssh/known_hosts
+  done
 fi
